@@ -1,0 +1,86 @@
+
+//Primeira tentativa do projeto 
+
+const express = require('express')
+const uuid = require('uuid')
+
+const app = express()
+const port = 3000
+app.use(express.json())
+
+const orders = []
+
+const checkOrderId = (request, response, next) => {
+    const { id } = request.params
+
+    const index = orders.findIndex(order => order.id === id)
+
+    if(index < 0) {
+        return response.status(404).json({error: "Order not found"})
+    }
+
+    request.orderIndex = index
+    request.orderId = id
+
+    next()
+}
+
+const checkMethodUrl = (request, response, next) => {
+    console.log(`Method: ${request.method} URL: ${request.url}`)
+
+    next()
+}
+
+
+app.post('/order',checkMethodUrl, (request, response) => {
+    const {order, clientName, price, status} = request.body
+
+    const clientOrder = {id: uuid.v4(), order, clientName, price, status}
+
+    orders.push(clientOrder)
+
+    return response.status(201).json(clientOrder)
+})
+
+app.get('/order',checkMethodUrl, (request, response) => {
+    return response.json(orders)
+})
+
+app.put('/order/:id',checkOrderId,checkMethodUrl, (request, response) => {
+    const {order, clientName, price, status} = request.body
+    const id = request.orderId
+    const index = request.orderIndex
+    const updatedOrder = {id, order, clientName, price, status}
+
+    orders[index] = updatedOrder
+
+    return response.json(updatedOrder)
+})
+
+app.delete('/order/:id',checkOrderId,checkMethodUrl, (request, response) => {
+    const index = request.orderIndex
+
+    orders.splice(index,1)
+
+    return response.status(204).json()
+})
+
+app.get('/order/:id',checkOrderId,checkMethodUrl, (request, response) => {
+    const index = request.orderIndex
+
+    return response.json(orders[index])
+})
+
+app.patch('/order/:id',checkOrderId,checkMethodUrl, (request, response) => {
+    const index = request.orderIndex
+
+    const updatedStatus = orders[index].status = "Pronto"
+
+    return response.json(updatedStatus)
+    
+})
+
+app.listen(port, () => {
+    console.log(`🚀Server started on port ${port}`)
+})
+
