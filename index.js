@@ -1,8 +1,13 @@
-const express = require('express')
-const uuid = require('uuid')
+import express from 'express'
+import { v4 } from 'uuid'
+import cors from 'cors'
+
+
 const app = express()
-const port = 3000
+const port = 3001
+
 app.use(express.json())
+app.use(cors())
 
 
 const orders = []
@@ -33,7 +38,7 @@ app.use(checkRouteMethod)
 app.post('/order', (request, response) => {
     const {order, clientName, price} = request.body
 
-    const newOrder = {id:uuid.v4(), order, clientName, price, status:"Em preparação"}
+    const newOrder = {id:v4(), order, clientName, price, status:"Em preparação"}
 
     orders.push(newOrder)
 
